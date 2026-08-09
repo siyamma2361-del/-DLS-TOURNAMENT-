@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>DLS Tournament BD</title>
+<style>
+*{box-sizing:border-box}body{margin:0;font-family:Arial,sans-serif;background:#07111f;color:#fff}
+header{padding:22px 16px;text-align:center;background:linear-gradient(135deg,#0d6efd,#13c77a)}
+h1{margin:0;font-size:28px}header p{margin:7px 0 0}
+.container{max-width:900px;margin:auto;padding:16px}
+.card{background:#101d2d;border:1px solid #22344b;border-radius:16px;padding:18px;margin:14px 0;box-shadow:0 8px 25px #0004}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:12px}
+.stat{background:#17273a;padding:15px;border-radius:12px;text-align:center}.stat b{font-size:25px;display:block}
+.btn{border:0;border-radius:10px;padding:12px 16px;font-weight:bold;cursor:pointer;background:#16c784;color:#00170e}
+.btn.blue{background:#1687ff;color:white}.btn.red{background:#ef5350;color:white}
+input,select{width:100%;padding:12px;border-radius:9px;border:1px solid #334960;background:#091523;color:#fff;margin:6px 0 12px}
+.slot{display:flex;justify-content:space-between;align-items:center;padding:12px;border:1px solid #2a4058;border-radius:10px;margin:7px 0}
+.slot.taken{opacity:.45}.badge{padding:4px 8px;border-radius:20px;background:#153b2d;color:#5ff0ad;font-size:12px}
+nav{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;padding:10px;background:#0a1625;position:sticky;top:0;z-index:3}
+nav button{background:#17273a;color:white;border:0;padding:9px 13px;border-radius:8px;cursor:pointer}
+.hidden{display:none}.notice{background:#152d45;padding:12px;border-radius:10px;color:#b9d9ff}
+table{width:100%;border-collapse:collapse}th,td{padding:9px;border-bottom:1px solid #263b51;text-align:left}
+small{color:#9bb0c4}.winner{font-size:22px;color:#ffd54a;font-weight:bold}
+</style>
+</head>
+<body>
+<header>
+<h1>🏆 DLS TOURNAMENT BD</h1>
+<p>Dream League Soccer • Online Tournament</p>
+</header>
+
+<nav>
+<button onclick="show('home')">🏠 Home</button>
+<button onclick="show('tournament')">🏆 Tournament</button>
+<button onclick="show('join')">🎟️ Slot Join</button>
+<button onclick="show('result')">📊 Results</button>
+<button onclick="show('admin')">⚙️ Admin</button>
+</nav>
+
+<div class="container">
+
+<section id="home">
+<div class="card">
+<h2>🔥 Next Tournament</h2>
+<div class="grid">
+<div class="stat"><b id="fee">৳50</b><small>Entry Fee</small></div>
+<div class="stat"><b id="prize">৳500</b><small>Winner Prize</small></div>
+<div class="stat"><b id="slotCount">0/8</b><small>Slots Booked</small></div>
+</div>
+<br><button class="btn blue" onclick="show('join')">🎟️ Slot Book করুন</button>
+</div>
+<div class="card">
+<h3>📜 Rules</h3>
+<ul>
+<li>1 vs 1 DLS Friend Match</li>
+<li>Match শেষে score screenshot জমা দিতে হবে</li>
+<li>নিয়ম ভাঙলে slot বাতিল হতে পারে</li>
+<li>Admin result verify করার পর winner ঘোষণা হবে</li>
+</ul>
+</div>
+<div class="card notice">💳 Payment: bKash/Nagad manual payment. টাকা পাঠানোর আগে Admin-এর নম্বর ও payment instruction দেখে নিন।</div>
+</section>
+
+<section id="tournament" class="hidden">
+<div class="card"><h2>🏆 Tournament Slots</h2><div id="slots"></div></div>
+</section>
+
+<section id="join" class="hidden">
+<div class="card">
+<h2>🎟️ Slot Registration</h2>
+<label>Player Name</label><input id="name" placeholder="আপনার নাম">
+<label>DLS ID / Player ID</label><input id="dlsid" placeholder="DLS ID">
+<label>WhatsApp Number</label><input id="phone" placeholder="01XXXXXXXXX">
+<label>Payment Method</label><select id="method"><option>bKash</option><option>Nagad</option></select>
+<label>Transaction ID</label><input id="trx" placeholder="Payment করার পর TrxID দিন">
+<label>Slot</label><select id="slot"></select>
+<button class="btn" onclick="join()">✅ Submit Registration</button>
+<p id="joinMsg"></p>
+</div>
+</section>
+
+<section id="result" class="hidden">
+<div class="card"><h2>📊 Tournament Result</h2><div id="results"></div></div>
+</section>
+
+<section id="admin" class="hidden">
+<div class="card">
+<h2>⚙️ Admin Panel</h2>
+<p><small>ডেমো Admin password: <b>1234</b></small></p>
+<input id="adminPass" type="password" placeholder="Admin password">
+<button class="btn blue" onclick="login()">Login</button>
+</div>
+<div id="adminArea" class="hidden">
+<div class="card">
+<h3>Tournament Settings</h3>
+<label>Entry Fee</label><input id="setFee" type="number">
+<label>Winner Prize</label><input id="setPrize" type="number">
+<label>Payment Number</label><input id="payNo" placeholder="bKash/Nagad number">
+<button class="btn" onclick="saveSettings()">Save Settings</button>
+</div>
+<div class="card">
+<h3>Registered Players</h3><div id="players"></div>
+</div>
+<div class="card">
+<h3>Winner</h3>
+<input id="winner" placeholder="Winner player name">
+<button class="btn" onclick="setWinner()">🏆 Declare Winner</button>
+</div>
+</div>
+</section>
+
+</div>
+
+<script>
+const KEY='dls_bd_v1';
+let data=JSON.parse(localStorage.getItem(KEY)||'null')||{
+fee:50,prize:500,payNo:'01XXXXXXXXX',winner:'',players:[]
+};
+function save(){localStorage.setItem(KEY,JSON.stringify(data));render()}
+function show(id){document.querySelectorAll('section').forEach(x=>x.classList.add('hidden'));document.getElementById(id).classList.remove('hidden');render()}
+function slots(){return Array.from({length:8},(_,i)=>i+1)}
+function render(){
+document.getElementById('fee').textContent='৳'+data.fee;
+document.getElementById('prize').textContent='৳'+data.prize;
+document.getElementById('slotCount').textContent=data.players.length+'/8';
+let s=document.getElementById('slots'); s.innerHTML='';
+slots().forEach(n=>{let p=data.players.find(x=>x.slot==n);s.innerHTML+=`<div class="slot ${p?'taken':''}"><span>Slot ${n} ${p?'— '+esc(p.name):''}</span><span class="badge">${p?'BOOKED':'AVAILABLE'}</span></div>`});
+let sel=document.getElementById('slot'); sel.innerHTML=slots().map(n=>{let p=data.players.find(x=>x.slot==n);return `<option value="${n}" ${p?'disabled':''}>Slot ${n} ${p?'(Booked)':''}</option>`}).join('');
+let r=document.getElementById('results'); r.innerHTML=data.winner?`<p class="winner">🏆 Winner: ${esc(data.winner)}</p><p>Prize: ৳${data.prize}</p>`:'<p>Result এখনো প্রকাশ করা হয়নি।</p>';
+let pl=document.getElementById('players'); if(pl) pl.innerHTML=data.players.length?data.players.map(p=>`<div class="slot"><span><b>Slot ${p.slot}</b> — ${esc(p.name)}<br><small>DLS: ${esc(p.dlsid)} • ${esc(p.phone)} • ${esc(p.method)} • Trx: ${esc(p.trx)}</small></span><button class="btn red" onclick="removePlayer(${p.slot})">Remove</button></div>`).join(''):'No players yet.';
+}
+function join(){
+let name=document.getElementById('name').value.trim(),dlsid=document.getElementById('dlsid').value.trim(),phone=document.getElementById('phone').value.trim(),method=document.getElementById('method').value,trx=document.getElementById('trx').value.trim(),slot=+document.getElementById('slot').value;
+if(!name||!dlsid||!phone||!trx){document.getElementById('joinMsg').textContent='সব তথ্য পূরণ করুন।';return}
+if(data.players.some(p=>p.slot==slot)){document.getElementById('joinMsg').textContent='এই slot ইতিমধ্যে বুকড।';return}
+data.players.push({name,dlsid,phone,method,trx,slot});save();
+document.getElementById('joinMsg').textContent='✅ Registration submitted! Admin payment verify করবে।';
+}
+function login(){if(document.getElementById('adminPass').value==='1234')document.getElementById('adminArea').classList.remove('hidden');else alert('Wrong password')}
+function saveSettings(){data.fee=+document.getElementById('setFee').value||50;data.prize=+document.getElementById('setPrize').value||500;data.payNo=document.getElementById('payNo').value||data.payNo;save();alert('Saved')}
+function removePlayer(slot){if(confirm('Remove this player?')){data.players=data.players.filter(p=>p.slot!=slot);save()}}
+function setWinner(){let w=document.getElementById('winner').value.trim();if(w){data.winner=w;save();alert('Winner declared')}}
+function esc(s){return String(s).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]))}
+render();
+</script>
+</body>
+</html>
