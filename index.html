@@ -2,7 +2,7 @@
 <html lang="bn">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <title>DLS Tournament</title>
 
@@ -14,10 +14,9 @@
 }
 
 html, body {
-  width: 100%;
-  min-height: 100%;
   margin: 0;
   padding: 0;
+  width: 100%;
   overflow-x: hidden;
 }
 
@@ -29,61 +28,49 @@ body {
 .container {
   width: 100%;
   max-width: 450px;
+  margin: auto;
   padding: 20px 14px;
-  margin: 0 auto;
 }
 
 .box {
   width: 100%;
-  background: #ffffff;
+  background: white;
   padding: 22px 18px;
   border-radius: 15px;
-  box-shadow: 0 4px 15px rgba(0,0,0,0.10);
+  box-shadow: 0 4px 15px rgba(0,0,0,.10);
 }
 
 h1 {
   text-align: center;
-  font-size: 25px;
   margin: 0 0 8px;
 }
 
 .subtitle {
   text-align: center;
   color: #666;
-  font-size: 14px;
   margin: 0 0 22px;
 }
 
 input {
-  display: block;
   width: 100%;
-  max-width: 100%;
   height: 48px;
   padding: 0 13px;
-  margin: 0 0 12px;
+  margin-bottom: 12px;
   border: 1px solid #ccc;
   border-radius: 8px;
   font-size: 15px;
-  outline: none;
-}
-
-input:focus {
-  border-color: #1677ff;
 }
 
 button {
-  display: block;
   width: 100%;
-  max-width: 100%;
   min-height: 48px;
-  padding: 12px;
-  margin-top: 8px;
   border: 0;
   border-radius: 8px;
   background: #1677ff;
   color: white;
   font-size: 16px;
   font-weight: bold;
+  margin-top: 8px;
 }
 
 .secondary {
@@ -99,7 +86,6 @@ button {
 }
 
 .message {
-  width: 100%;
   margin-top: 15px;
   text-align: center;
   font-size: 14px;
@@ -108,25 +94,14 @@ button {
 }
 
 .dashboard {
-  width: 100%;
   text-align: center;
 }
 
-.info {
-  width: 100%;
-  overflow-wrap: anywhere;
-}
-
 .balance {
-  width: 100%;
   background: #eef6ff;
   padding: 18px;
   border-radius: 10px;
   margin: 18px 0;
-}
-
-.balance-title {
-  font-size: 15px;
 }
 
 .balance-number {
@@ -134,26 +109,6 @@ button {
   margin-top: 6px;
   font-size: 30px;
   font-weight: bold;
-  overflow-wrap: anywhere;
-}
-
-@media (max-width: 360px) {
-  .container {
-    padding: 15px 10px;
-  }
-
-  .box {
-    padding: 20px 14px;
-  }
-
-  h1 {
-    font-size: 22px;
-  }
-
-  input,
-  button {
-    font-size: 14px;
-  }
 }
 </style>
 </head>
@@ -174,26 +129,22 @@ button {
     <input
       type="text"
       id="signupName"
-      placeholder="Player Name"
-    >
+      placeholder="Player Name">
 
     <input
       type="text"
       id="signupDlsId"
-      placeholder="DLS ID"
-    >
+      placeholder="DLS ID">
 
     <input
       type="email"
       id="signupEmail"
-      placeholder="Email"
-    >
+      placeholder="Email">
 
     <input
       type="password"
       id="signupPassword"
-      placeholder="Password"
-    >
+      placeholder="Password">
 
     <button onclick="signUp()">
       Sign Up
@@ -227,14 +178,12 @@ button {
     <input
       type="email"
       id="loginEmail"
-      placeholder="Email"
-    >
+      placeholder="Email">
 
     <input
       type="password"
       id="loginPassword"
-      placeholder="Password"
-    >
+      placeholder="Password">
 
     <button onclick="login()">
       Sign In
@@ -267,19 +216,15 @@ button {
         Player Dashboard
       </p>
 
-      <div class="info">
-        <strong>Player Name</strong>
-        <p id="playerName">---</p>
-      </div>
+      <strong>Player Name</strong>
+      <p id="playerName">---</p>
 
-      <div class="info">
-        <strong>DLS ID</strong>
-        <p id="playerDlsId">---</p>
-      </div>
+      <strong>DLS ID</strong>
+      <p id="playerDlsId">---</p>
 
       <div class="balance">
 
-        <div class="balance-title">
+        <div>
           Wallet Balance
         </div>
 
@@ -333,7 +278,7 @@ supabase.createClient(
 
 
 /* =========================
-   SHOW SIGN UP
+   SHOW SIGNUP
 ========================= */
 
 function showSignup() {
@@ -440,20 +385,22 @@ async function signUp() {
     }
 
 
+    /* SAVE PLAYER DATA */
+
     const { error: playerError } =
       await supabaseClient
         .from("players")
         .insert({
 
-          id: data.user.id,
+          "Id": data.user.id,
 
-          name: name,
+          "DIs id": dlsId,
 
-          dls_id: dlsId,
+          "Balance": 0,
 
-          email: email,
+          "Name": name,
 
-          balance: 0
+          "Email": email
 
         });
 
@@ -461,7 +408,7 @@ async function signUp() {
     if (playerError) {
 
       message.innerText =
-        "Player data save হয়নি: "
+        "Account হয়েছে, কিন্তু Player Data save হয়নি: "
         + playerError.message;
 
       return;
@@ -469,7 +416,7 @@ async function signUp() {
 
 
     message.innerText =
-      "Account তৈরি হয়েছে। এখন Sign In করো।";
+      "Account সফলভাবে তৈরি হয়েছে। এখন Sign In করো।";
 
 
     setTimeout(function() {
@@ -568,10 +515,8 @@ async function loadProfile() {
   const { data, error } =
     await supabaseClient
       .from("players")
-      .select(
-        "name,dls_id,balance,email"
-      )
-      .eq("id", user.id)
+      .select('"Name", "DIs id", "Balance", "Email"')
+      .eq("Id", user.id)
       .single();
 
 
@@ -590,28 +535,30 @@ async function loadProfile() {
   document
     .getElementById("playerName")
     .innerText =
-    data.name || "---";
+    data["Name"] || "---";
 
 
   document
     .getElementById("playerDlsId")
     .innerText =
-    data.dls_id || "---";
+    data["DIs id"] || "---";
 
 
   document
     .getElementById("playerBalance")
     .innerText =
-    "৳" + (data.balance || 0);
+    "৳" + (data["Balance"] || 0);
 
 
   document
     .getElementById("signupBox")
     .classList.add("hidden");
 
+
   document
     .getElementById("loginBox")
     .classList.add("hidden");
+
 
   document
     .getElementById("dashboardBox")
