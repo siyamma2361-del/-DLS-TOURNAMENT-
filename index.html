@@ -17,6 +17,7 @@ html, body {
   margin: 0;
   padding: 0;
   width: 100%;
+  min-height: 100%;
   overflow-x: hidden;
 }
 
@@ -28,13 +29,13 @@ body {
 .container {
   width: 100%;
   max-width: 450px;
-  margin: auto;
+  margin: 0 auto;
   padding: 20px 14px;
 }
 
 .box {
   width: 100%;
-  background: white;
+  background: #fff;
   padding: 22px 18px;
   border-radius: 15px;
   box-shadow: 0 4px 15px rgba(0,0,0,.10);
@@ -43,6 +44,7 @@ body {
 h1 {
   text-align: center;
   margin: 0 0 8px;
+  font-size: 25px;
 }
 
 .subtitle {
@@ -52,6 +54,7 @@ h1 {
 }
 
 input {
+  display: block;
   width: 100%;
   height: 48px;
   padding: 0 13px;
@@ -62,15 +65,17 @@ input {
 }
 
 button {
+  display: block;
   width: 100%;
   min-height: 48px;
+  padding: 12px;
+  margin-top: 8px;
   border: 0;
   border-radius: 8px;
   background: #1677ff;
   color: white;
   font-size: 16px;
   font-weight: bold;
-  margin-top: 8px;
 }
 
 .secondary {
@@ -86,6 +91,7 @@ button {
 }
 
 .message {
+  width: 100%;
   margin-top: 15px;
   text-align: center;
   font-size: 14px;
@@ -94,10 +100,12 @@ button {
 }
 
 .dashboard {
+  width: 100%;
   text-align: center;
 }
 
 .balance {
+  width: 100%;
   background: #eef6ff;
   padding: 18px;
   border-radius: 10px;
@@ -109,6 +117,20 @@ button {
   margin-top: 6px;
   font-size: 30px;
   font-weight: bold;
+}
+
+@media (max-width: 360px) {
+  .container {
+    padding: 15px 10px;
+  }
+
+  .box {
+    padding: 20px 14px;
+  }
+
+  h1 {
+    font-size: 22px;
+  }
 }
 </style>
 </head>
@@ -122,9 +144,7 @@ button {
 
     <h1>DLS Tournament</h1>
 
-    <p class="subtitle">
-      Create Player Account
-    </p>
+    <p class="subtitle">Create Player Account</p>
 
     <input
       type="text"
@@ -185,7 +205,9 @@ button {
       id="loginPassword"
       placeholder="Password">
 
-    <button onclick="login()">
+    <button
+      id="loginButton"
+      onclick="login()">
       Sign In
     </button>
 
@@ -217,10 +239,16 @@ button {
       </p>
 
       <strong>Player Name</strong>
-      <p id="playerName">---</p>
+
+      <p id="playerName">
+        ---
+      </p>
 
       <strong>DLS ID</strong>
-      <p id="playerDlsId">---</p>
+
+      <p id="playerDlsId">
+        ---
+      </p>
 
       <div class="balance">
 
@@ -261,7 +289,7 @@ button {
 <script>
 
 /* =========================
-   SUPABASE SETTINGS
+   SUPABASE
 ========================= */
 
 const SUPABASE_URL =
@@ -305,6 +333,26 @@ function showLogin() {
 
   document
     .getElementById("loginBox")
+    .classList.remove("hidden");
+}
+
+
+/* =========================
+   SHOW DASHBOARD
+========================= */
+
+function showDashboard() {
+
+  document
+    .getElementById("signupBox")
+    .classList.add("hidden");
+
+  document
+    .getElementById("loginBox")
+    .classList.add("hidden");
+
+  document
+    .getElementById("dashboardBox")
     .classList.remove("hidden");
 }
 
@@ -385,8 +433,6 @@ async function signUp() {
     }
 
 
-    /* SAVE PLAYER DATA */
-
     const { error: playerError } =
       await supabaseClient
         .from("players")
@@ -423,7 +469,7 @@ async function signUp() {
 
       showLogin();
 
-    }, 1500);
+    }, 1200);
 
 
   } catch (error) {
@@ -455,6 +501,9 @@ async function login() {
   const message =
     document.getElementById("loginMessage");
 
+  const button =
+    document.getElementById("loginButton");
+
 
   if (!email || !password) {
 
@@ -465,30 +514,78 @@ async function login() {
   }
 
 
+  button.disabled = true;
+
+  button.innerText =
+    "Signing In...";
+
   message.innerText =
-    "Sign In হচ্ছে...";
+    "";
 
 
-  const { error } =
-    await supabaseClient.auth.signInWithPassword({
+  try {
 
-      email: email,
+    const { data, error } =
+      await supabaseClient.auth.signInWithPassword({
 
-      password: password
+        email: email,
 
-    });
+        password: password
+
+      });
 
 
-  if (error) {
+    if (error) {
+
+      message.innerText =
+        error.message;
+
+      button.disabled = false;
+
+      button.innerText =
+        "Sign In";
+
+      return;
+    }
+
+
+    if (!data.user) {
+
+      message.innerText =
+        "User পাওয়া যায়নি।";
+
+      button.disabled = false;
+
+      button.innerText =
+        "Sign In";
+
+      return;
+    }
+
 
     message.innerText =
-      error.message;
+      "Login successful!";
 
-    return;
+
+    /*
+      Login হওয়ার পর player data load
+    */
+
+    await loadProfile(data.user.id);
+
+
+  } catch (error) {
+
+    message.innerText =
+      "Login error: " + error.message;
+
   }
 
 
-  await loadProfile();
+  button.disabled = false;
+
+  button.innerText =
+    "Sign In";
 }
 
 
@@ -496,73 +593,124 @@ async function login() {
    LOAD PROFILE
 ========================= */
 
-async function loadProfile() {
+async function loadProfile(userId = null) {
 
-  const {
-    data: { user }
-  } =
-    await supabaseClient.auth.getUser();
+  const dashboardMessage =
+    document.getElementById("dashboardMessage");
 
 
-  if (!user) {
+  try {
 
-    showLogin();
+    /*
+      যদি userId না থাকে,
+      Supabase থেকে current user নেওয়া হবে
+    */
 
-    return;
-  }
+    if (!userId) {
+
+      const {
+        data: userData,
+        error: userError
+      } =
+        await supabaseClient.auth.getUser();
 
 
-  const { data, error } =
-    await supabaseClient
-      .from("players")
-      .select('"Name", "DIs id", "Balance", "Email"')
-      .eq("Id", user.id)
-      .single();
+      if (userError) {
+
+        showLogin();
+
+        return;
+      }
 
 
-  if (error) {
+      if (!userData.user) {
+
+        showLogin();
+
+        return;
+      }
+
+
+      userId =
+        userData.user.id;
+    }
+
+
+    /*
+      Player table থেকে data নেওয়া
+    */
+
+    const { data, error } =
+      await supabaseClient
+        .from("players")
+        .select(
+          '"Name", "DIs id", "Balance", "Email"'
+        )
+        .eq(
+          "Id",
+          userId
+        )
+        .maybeSingle();
+
+
+    if (error) {
+
+      dashboardMessage.innerText =
+        "Player data পাওয়া যায়নি: "
+        + error.message;
+
+      return;
+    }
+
+
+    if (!data) {
+
+      dashboardMessage.innerText =
+        "এই account-এর Player Data পাওয়া যায়নি।";
+
+      return;
+    }
+
+
+    /*
+      Dashboard data বসানো
+    */
 
     document
-      .getElementById("dashboardMessage")
+      .getElementById("playerName")
       .innerText =
-      "Player data পাওয়া যায়নি: "
-      + error.message;
+      data["Name"] || "---";
 
-    return;
+
+    document
+      .getElementById("playerDlsId")
+      .innerText =
+      data["DIs id"] || "---";
+
+
+    document
+      .getElementById("playerBalance")
+      .innerText =
+      "৳" + (data["Balance"] ?? 0);
+
+
+    dashboardMessage.innerText =
+      "";
+
+
+    /*
+      Dashboard দেখানো
+    */
+
+    showDashboard();
+
+
+  } catch (error) {
+
+    dashboardMessage.innerText =
+      "Profile error: " + error.message;
+
   }
-
-
-  document
-    .getElementById("playerName")
-    .innerText =
-    data["Name"] || "---";
-
-
-  document
-    .getElementById("playerDlsId")
-    .innerText =
-    data["DIs id"] || "---";
-
-
-  document
-    .getElementById("playerBalance")
-    .innerText =
-    "৳" + (data["Balance"] || 0);
-
-
-  document
-    .getElementById("signupBox")
-    .classList.add("hidden");
-
-
-  document
-    .getElementById("loginBox")
-    .classList.add("hidden");
-
-
-  document
-    .getElementById("dashboardBox")
-    .classList.remove("hidden");
 }
 
 
@@ -572,19 +720,21 @@ async function loadProfile() {
 
 async function refreshProfile() {
 
-  document
-    .getElementById("dashboardMessage")
-    .innerText =
+  const message =
+    document.getElementById("dashboardMessage");
+
+  message.innerText =
     "Loading...";
 
 
   await loadProfile();
 
 
-  document
-    .getElementById("dashboardMessage")
-    .innerText =
-    "";
+  setTimeout(function() {
+
+    message.innerText = "";
+
+  }, 500);
 }
 
 
@@ -596,15 +746,25 @@ async function logout() {
 
   await supabaseClient.auth.signOut();
 
-
   document
     .getElementById("dashboardBox")
     .classList.add("hidden");
 
-
   document
     .getElementById("loginBox")
     .classList.remove("hidden");
+
+  document
+    .getElementById("loginEmail")
+    .value = "";
+
+  document
+    .getElementById("loginPassword")
+    .value = "";
+
+  document
+    .getElementById("loginMessage")
+    .innerText = "";
 }
 
 
@@ -614,15 +774,28 @@ async function logout() {
 
 async function checkSession() {
 
-  const {
-    data: { session }
-  } =
-    await supabaseClient.auth.getSession();
+  try {
+
+    const {
+      data: { session }
+    } =
+      await supabaseClient.auth.getSession();
 
 
-  if (session) {
+    if (session && session.user) {
 
-    await loadProfile();
+      await loadProfile(
+        session.user.id
+      );
+
+    }
+
+  } catch (error) {
+
+    console.log(
+      "Session error:",
+      error
+    );
 
   }
 }
