@@ -1,3 +1,247 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>DLS Tournament</title>
+
+  <!-- Supabase -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: Arial, sans-serif;
+    }
+
+    body {
+      background: #f2f4f7;
+      min-height: 100vh;
+    }
+
+    .container {
+      width: 92%;
+      max-width: 450px;
+      margin: 30px auto;
+    }
+
+    .box {
+      background: white;
+      padding: 25px;
+      border-radius: 15px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.10);
+    }
+
+    h1 {
+      text-align: center;
+      margin-bottom: 8px;
+    }
+
+    .subtitle {
+      text-align: center;
+      color: #666;
+      margin-bottom: 22px;
+    }
+
+    input {
+      width: 100%;
+      padding: 13px;
+      margin-bottom: 12px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      font-size: 15px;
+    }
+
+    button {
+      width: 100%;
+      padding: 13px;
+      border: none;
+      border-radius: 8px;
+      background: #1677ff;
+      color: white;
+      font-size: 16px;
+      font-weight: bold;
+      cursor: pointer;
+      margin-top: 5px;
+    }
+
+    button:hover {
+      opacity: 0.9;
+    }
+
+    .secondary {
+      background: #555;
+      margin-top: 10px;
+    }
+
+    .hidden {
+      display: none;
+    }
+
+    .message {
+      margin-top: 15px;
+      text-align: center;
+      font-size: 14px;
+      font-weight: bold;
+    }
+
+    .dashboard {
+      text-align: center;
+    }
+
+    .balance {
+      background: #eef6ff;
+      padding: 18px;
+      border-radius: 10px;
+      margin: 18px 0;
+    }
+
+    .balance span {
+      display: block;
+      font-size: 28px;
+      font-weight: bold;
+      margin-top: 5px;
+    }
+
+    .logout {
+      background: #e53935;
+    }
+  </style>
+</head>
+
+<body>
+
+<div class="container">
+
+  <!-- SIGN UP -->
+  <div class="box" id="signupBox">
+
+    <h1>DLS Tournament</h1>
+    <p class="subtitle">Create Player Account</p>
+
+    <input
+      type="text"
+      id="signupName"
+      placeholder="Player Name"
+    >
+
+    <input
+      type="text"
+      id="signupDlsId"
+      placeholder="DLS ID"
+    >
+
+    <input
+      type="email"
+      id="signupEmail"
+      placeholder="Email"
+    >
+
+    <input
+      type="password"
+      id="signupPassword"
+      placeholder="Password"
+    >
+
+    <button onclick="signUp()">
+      Sign Up
+    </button>
+
+    <button class="secondary" onclick="showLogin()">
+      Already have an account? Sign In
+    </button>
+
+    <div class="message" id="signupMessage"></div>
+
+  </div>
+
+
+  <!-- LOGIN -->
+  <div class="box hidden" id="loginBox">
+
+    <h1>Welcome Back</h1>
+    <p class="subtitle">Sign in to your account</p>
+
+    <input
+      type="email"
+      id="loginEmail"
+      placeholder="Email"
+    >
+
+    <input
+      type="password"
+      id="loginPassword"
+      placeholder="Password"
+    >
+
+    <button onclick="login()">
+      Sign In
+    </button>
+
+    <button class="secondary" onclick="showSignup()">
+      Create New Account
+    </button>
+
+    <div class="message" id="loginMessage"></div>
+
+  </div>
+
+
+  <!-- DASHBOARD -->
+  <div class="box hidden" id="dashboardBox">
+
+    <div class="dashboard">
+
+      <h1>DLS Tournament</h1>
+
+      <p class="subtitle">
+        Player Dashboard
+      </p>
+
+      <div>
+        <strong>Player Name</strong>
+        <p id="playerName">---</p>
+      </div>
+
+      <br>
+
+      <div>
+        <strong>DLS ID</strong>
+        <p id="playerDlsId">---</p>
+      </div>
+
+      <div class="balance">
+
+        <strong>Wallet Balance</strong>
+
+        <span>
+          ৳<span id="playerBalance">0</span>
+        </span>
+
+      </div>
+
+      <button onclick="refreshProfile()">
+        Refresh Balance
+      </button>
+
+      <button class="logout" onclick="logout()">
+        Logout
+      </button>
+
+      <div class="message" id="dashboardMessage"></div>
+
+    </div>
+
+  </div>
+
+</div>
+
+
+<script>
+
 /* =========================
    SUPABASE SETTINGS
 ========================= */
@@ -13,3 +257,355 @@ supabase.createClient(
   SUPABASE_URL,
   SUPABASE_KEY
 );
+
+
+/* =========================
+   SHOW SIGN UP
+========================= */
+
+function showSignup() {
+
+  document
+    .getElementById("signupBox")
+    .classList.remove("hidden");
+
+  document
+    .getElementById("loginBox")
+    .classList.add("hidden");
+
+}
+
+
+/* =========================
+   SHOW LOGIN
+========================= */
+
+function showLogin() {
+
+  document
+    .getElementById("signupBox")
+    .classList.add("hidden");
+
+  document
+    .getElementById("loginBox")
+    .classList.remove("hidden");
+
+}
+
+
+/* =========================
+   SIGN UP
+========================= */
+
+async function signUp() {
+
+  const name =
+    document.getElementById("signupName").value.trim();
+
+  const dlsId =
+    document.getElementById("signupDlsId").value.trim();
+
+  const email =
+    document.getElementById("signupEmail").value.trim();
+
+  const password =
+    document.getElementById("signupPassword").value;
+
+  const message =
+    document.getElementById("signupMessage");
+
+
+  if (!name || !dlsId || !email || !password) {
+
+    message.innerText =
+      "সব ঘর পূরণ করো।";
+
+    return;
+  }
+
+
+  message.innerText =
+    "Account তৈরি হচ্ছে...";
+
+
+  try {
+
+    const { data, error } =
+      await supabaseClient.auth.signUp({
+
+        email: email,
+
+        password: password
+
+      });
+
+
+    if (error) {
+
+      message.innerText =
+        error.message;
+
+      return;
+    }
+
+
+    if (!data.user) {
+
+      message.innerText =
+        "Account তৈরি করা যায়নি।";
+
+      return;
+    }
+
+
+    /*
+      players table-এ player information save
+    */
+
+    const { error: playerError } =
+      await supabaseClient
+        .from("players")
+        .insert({
+
+          id: data.user.id,
+
+          name: name,
+
+          dls_id: dlsId,
+
+          email: email,
+
+          balance: 0
+
+        });
+
+
+    if (playerError) {
+
+      message.innerText =
+        "Account হয়েছে, কিন্তু player data save হয়নি: "
+        + playerError.message;
+
+      return;
+    }
+
+
+    message.innerText =
+      "Account সফলভাবে তৈরি হয়েছে! এখন Sign In করো।";
+
+    setTimeout(function() {
+
+      showLogin();
+
+    }, 1500);
+
+
+  } catch (err) {
+
+    message.innerText =
+      "Error: " + err.message;
+
+  }
+
+}
+
+
+/* =========================
+   LOGIN
+========================= */
+
+async function login() {
+
+  const email =
+    document.getElementById("loginEmail").value.trim();
+
+  const password =
+    document.getElementById("loginPassword").value;
+
+  const message =
+    document.getElementById("loginMessage");
+
+
+  if (!email || !password) {
+
+    message.innerText =
+      "Email এবং Password দাও।";
+
+    return;
+  }
+
+
+  message.innerText =
+    "Sign In হচ্ছে...";
+
+
+  const { data, error } =
+    await supabaseClient.auth.signInWithPassword({
+
+      email: email,
+
+      password: password
+
+    });
+
+
+  if (error) {
+
+    message.innerText =
+      error.message;
+
+    return;
+  }
+
+
+  message.innerText =
+    "Login successful!";
+
+
+  await loadProfile();
+
+}
+
+
+/* =========================
+   LOAD PLAYER PROFILE
+========================= */
+
+async function loadProfile() {
+
+  const {
+    data: { user }
+  } = await supabaseClient.auth.getUser();
+
+
+  if (!user) {
+
+    showLogin();
+
+    return;
+
+  }
+
+
+  const { data, error } =
+    await supabaseClient
+      .from("players")
+      .select("name,dls_id,balance,email")
+      .eq("id", user.id)
+      .single();
+
+
+  if (error) {
+
+    document.getElementById("dashboardMessage").innerText =
+      "Player data পাওয়া যায়নি: " + error.message;
+
+    return;
+
+  }
+
+
+  document.getElementById("playerName").innerText =
+    data.name || "---";
+
+
+  document.getElementById("playerDlsId").innerText =
+    data.dls_id || "---";
+
+
+  document.getElementById("playerBalance").innerText =
+    data.balance || 0;
+
+
+  document
+    .getElementById("loginBox")
+    .classList.add("hidden");
+
+
+  document
+    .getElementById("signupBox")
+    .classList.add("hidden");
+
+
+  document
+    .getElementById("dashboardBox")
+    .classList.remove("hidden");
+
+}
+
+
+/* =========================
+   REFRESH PROFILE
+========================= */
+
+async function refreshProfile() {
+
+  document.getElementById("dashboardMessage").innerText =
+    "Loading...";
+
+  await loadProfile();
+
+  document.getElementById("dashboardMessage").innerText =
+    "";
+
+}
+
+
+/* =========================
+   LOGOUT
+========================= */
+
+async function logout() {
+
+  await supabaseClient.auth.signOut();
+
+
+  document
+    .getElementById("dashboardBox")
+    .classList.add("hidden");
+
+
+  document
+    .getElementById("loginBox")
+    .classList.remove("hidden");
+
+
+  document.getElementById("loginEmail").value =
+    "";
+
+  document.getElementById("loginPassword").value =
+    "";
+
+}
+
+
+/* =========================
+   CHECK EXISTING SESSION
+========================= */
+
+async function checkSession() {
+
+  const {
+    data: { session }
+  } = await supabaseClient.auth.getSession();
+
+
+  if (session) {
+
+    await loadProfile();
+
+  }
+
+}
+
+
+/* =========================
+   START
+========================= */
+
+checkSession();
+
+</script>
+
+</body>
+</html>
