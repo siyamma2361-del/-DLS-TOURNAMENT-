@@ -87,7 +87,7 @@ async function registerPlayer(){
 
   const { data, error } =
   await supabaseClient
-  .from("players")
+  .from("player")
   .insert([
     {
       name: name,
