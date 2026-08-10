@@ -400,22 +400,24 @@ return;
 }
 
 
-/* SAVE PLAYER DATA */
+/* =========================
+   SAVE PLAYER DATA
+========================= */
 
 const { error: playerError } =
 await supabaseClient
 .from("Player")
 .insert({
 
-"Id": data.user.id,
+  "Id": data.user.id,
 
-"DIs id": dlsId,
+  "Dls id": dlsId,
 
-"Balance": 0,
+  "Balance": 0,
 
-"Name": name,
+  "Name": name,
 
-"Email": email
+  "Email": email
 
 });
 
@@ -541,8 +543,8 @@ return;
 const { data, error } =
 await supabaseClient
 .from("Player")
-.select('"Name", "DIs id", "Balance", "Email"')
-.eq('"Id"', user.id)
+.select('"Name", "Dls id", "Balance", "Email"')
+.eq("Id", user.id)
 .single();
 
 
@@ -569,7 +571,7 @@ data["Name"] || "---";
 document
 .getElementById("playerDlsId")
 .innerText =
-data["DIs id"] || "---";
+data["Dls id"] || "---";
 
 
 document
