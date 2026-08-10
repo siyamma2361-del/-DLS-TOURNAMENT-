@@ -5,6 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>⚽ DLS Tournament 🏆</title>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
 <style>
 body{
   margin:0;
@@ -26,6 +28,25 @@ h1{margin:0;font-size:30px}
   border-radius:16px;
 }
 h2{color:#60a5fa}
+input{
+  width:90%;
+  padding:13px;
+  margin:7px 0;
+  border:0;
+  border-radius:8px;
+  font-size:16px;
+}
+button{
+  padding:13px 22px;
+  margin:7px;
+  border:0;
+  border-radius:9px;
+  background:#2563eb;
+  color:white;
+  font-size:16px;
+  font-weight:bold;
+}
+.logout{background:#dc2626}
 .info{font-size:18px;line-height:1.9}
 .slot{
   background:#202a44;
@@ -44,6 +65,8 @@ h2{color:#60a5fa}
   font-size:18px;
   font-weight:bold;
 }
+#profileCard{display:none}
+#message{margin:10px;font-weight:bold}
 footer{padding:20px;color:#9ca3af}
 </style>
 </head>
@@ -56,6 +79,37 @@ footer{padding:20px;color:#9ca3af}
 </div>
 
 <div class="container">
+
+<!-- SIGN UP / SIGN IN -->
+<div class="card" id="authCard">
+<h2>🔐 Player Account</h2>
+
+<input type="email" id="email" placeholder="Email">
+<input type="password" id="password" placeholder="Password">
+
+<br>
+
+<button onclick="signUp()">📝 Sign Up</button>
+<button onclick="signIn()">🔑 Sign In</button>
+
+<div id="message"></div>
+</div>
+
+<!-- PLAYER PROFILE -->
+<div class="card" id="profileCard">
+<h2>👤 Player Registration</h2>
+
+<input type="text" id="playerName" placeholder="Player Name">
+<input type="text" id="whatsapp" placeholder="WhatsApp Number">
+<input type="text" id="dlsId" placeholder="DLS ID">
+
+<br>
+
+<button onclick="saveProfile()">💾 Save Player</button>
+<button class="logout" onclick="logout()">🚪 Logout</button>
+
+<div id="profileMessage"></div>
+</div>
 
 <div class="card">
 <h2>🏆 Tournament Info</h2>
@@ -103,6 +157,137 @@ target="_blank">
 ⚽ DLS Tournament 🏆<br>
 © 2026 All Rights Reserved
 </footer>
+
+<script>
+
+const SUPABASE_URL = "https://jodyhoguykfmvlyqilwb.supabase.co";
+const SUPABASE_KEY = sb_publishable_-aNkwelXcTJWpI_VM8_TPA_GHcz1F2C
+
+const supabaseClient = supabase.createClient(
+  SUPABASE_URL,
+  SUPABASE_KEY
+);
+
+async function signUp(){
+
+  const email = document.getElementById("email").value;
+  const password = document.getElementById("password").value;
+
+  if(!email || !password){
+    document.getElementById("message").innerText =
+    "Email এবং Password দিন।";
+    return;
+  }
+
+  const {error} = await supabaseClient.auth.signUp({
+    email: email,
+    password: password
+  });
+
+  if(error){
+    document.getElementById("message").innerText =
+    error.message;
+  }else{
+    document.getElementById("message").innerText =
+    "✅ Account তৈরি হয়েছে! এখন Sign In করুন।";
+  }
+}
+
+async function signIn(){
+
+  const email = document.getElementById("email").value;
+  const password = document.getElementById("password").value;
+
+  const {error} = await supabaseClient.auth.signInWithPassword({
+    email: email,
+    password: password
+  });
+
+  if(error){
+    document.getElementById("message").innerText =
+    error.message;
+  }else{
+    document.getElementById("message").innerText =
+    "✅ Login successful!";
+    showProfile();
+  }
+}
+
+async function showProfile(){
+
+  const {data} = await supabaseClient.auth.getUser();
+
+  if(data.user){
+
+    document.getElementById("authCard").style.display="none";
+    document.getElementById("profileCard").style.display="block";
+
+  }
+}
+
+async function saveProfile(){
+
+  const {data} = await supabaseClient.auth.getUser();
+
+  if(!data.user){
+    return;
+  }
+
+  const playerName =
+  document.getElementById("playerName").value;
+
+  const whatsapp =
+  document.getElementById("whatsapp").value;
+
+  const dlsId =
+  document.getElementById("dlsId").value;
+
+  if(!playerName || !whatsapp || !dlsId){
+
+    document.getElementById("profileMessage").innerText =
+    "সব তথ্য পূরণ করুন।";
+
+    return;
+  }
+
+  const {error} = await supabaseClient
+    .from("players")
+    .insert({
+      player_name: playerName,
+      whatsapp: whatsapp,
+      dls_id: dlsId
+    });
+
+  if(error){
+
+    document.getElementById("profileMessage").innerText =
+    error.message;
+
+  }else{
+
+    document.getElementById("profileMessage").innerText =
+    "✅ Player Registration সফল হয়েছে!";
+  }
+}
+
+async function logout(){
+
+  await supabaseClient.auth.signOut();
+
+  document.getElementById("profileCard").style.display="none";
+  document.getElementById("authCard").style.display="block";
+
+}
+
+supabaseClient.auth.getSession().then(({data}) => {
+
+  if(data.session){
+    showProfile();
+  }
+
+});
+
+</script>
 
 </body>
 </html>
