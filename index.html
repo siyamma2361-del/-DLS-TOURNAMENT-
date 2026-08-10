@@ -11,50 +11,41 @@
 <style>
 * {
   box-sizing: border-box;
-}
-
-html, body {
   margin: 0;
   padding: 0;
-  width: 100%;
-  min-height: 100%;
-  overflow-x: hidden;
+  font-family: Arial, sans-serif;
 }
 
 body {
   background: #f2f4f7;
-  font-family: Arial, sans-serif;
+  min-height: 100vh;
 }
 
 .container {
-  width: 100%;
+  width: 92%;
   max-width: 450px;
-  margin: 0 auto;
-  padding: 20px 14px;
+  margin: 30px auto;
 }
 
 .box {
-  width: 100%;
   background: white;
-  padding: 22px 18px;
+  padding: 25px;
   border-radius: 15px;
-  box-shadow: 0 4px 15px rgba(0,0,0,.10);
+  box-shadow: 0 4px 15px rgba(0,0,0,0.10);
 }
 
 h1 {
   text-align: center;
-  margin: 0 0 8px;
-  font-size: 25px;
+  margin-bottom: 8px;
 }
 
 .subtitle {
   text-align: center;
   color: #666;
-  margin: 0 0 22px;
+  margin-bottom: 22px;
 }
 
 input {
-  display: block;
   width: 100%;
   height: 48px;
   padding: 0 13px;
@@ -65,21 +56,16 @@ input {
 }
 
 button {
-  display: block;
   width: 100%;
   min-height: 48px;
-  padding: 12px;
-  margin-top: 8px;
-  border: 0;
+  border: none;
   border-radius: 8px;
   background: #1677ff;
   color: white;
   font-size: 16px;
   font-weight: bold;
-}
-
-button:disabled {
-  opacity: 0.6;
+  cursor: pointer;
+  margin-top: 8px;
 }
 
 .secondary {
@@ -95,7 +81,6 @@ button:disabled {
 }
 
 .message {
-  width: 100%;
   margin-top: 15px;
   text-align: center;
   font-size: 14px;
@@ -104,12 +89,10 @@ button:disabled {
 }
 
 .dashboard {
-  width: 100%;
   text-align: center;
 }
 
 .balance {
-  width: 100%;
   background: #eef6ff;
   padding: 18px;
   border-radius: 10px;
@@ -129,10 +112,7 @@ button:disabled {
 
 <div class="container">
 
-<!-- =========================
-     SIGN UP
-========================= -->
-
+<!-- SIGN UP -->
 <div class="box" id="signupBox">
 
 <h1>DLS Tournament</h1>
@@ -179,10 +159,7 @@ id="signupMessage">
 </div>
 
 
-<!-- =========================
-     LOGIN
-========================= -->
-
+<!-- LOGIN -->
 <div
 class="box hidden"
 id="loginBox">
@@ -203,9 +180,7 @@ type="password"
 id="loginPassword"
 placeholder="Password">
 
-<button
-id="loginButton"
-onclick="login()">
+<button onclick="login()">
 Sign In
 </button>
 
@@ -223,10 +198,7 @@ id="loginMessage">
 </div>
 
 
-<!-- =========================
-     DASHBOARD
-========================= -->
-
+<!-- DASHBOARD -->
 <div
 class="box hidden"
 id="dashboardBox">
@@ -244,6 +216,8 @@ Player Dashboard
 <p id="playerName">
 ---
 </p>
+
+<br>
 
 <strong>DLS ID</strong>
 
@@ -290,7 +264,7 @@ id="dashboardMessage">
 <script>
 
 /* =========================
-   SUPABASE SETTINGS
+   SUPABASE
 ========================= */
 
 const SUPABASE_URL =
@@ -320,6 +294,10 @@ document
 .getElementById("loginBox")
 .classList.add("hidden");
 
+document
+.getElementById("dashboardBox")
+.classList.add("hidden");
+
 }
 
 
@@ -337,26 +315,9 @@ document
 .getElementById("loginBox")
 .classList.remove("hidden");
 
-}
-
-
-/* =========================
-   SHOW DASHBOARD
-========================= */
-
-function showDashboard() {
-
-document
-.getElementById("signupBox")
-.classList.add("hidden");
-
-document
-.getElementById("loginBox")
-.classList.add("hidden");
-
 document
 .getElementById("dashboardBox")
-.classList.remove("hidden");
+.classList.add("hidden");
 
 }
 
@@ -400,7 +361,6 @@ message.innerText =
 "সব ঘর পূরণ করো।";
 
 return;
-
 }
 
 
@@ -409,6 +369,8 @@ message.innerText =
 
 
 try {
+
+/* CREATE AUTH ACCOUNT */
 
 const { data, error } =
 await supabaseClient.auth.signUp({
@@ -426,7 +388,6 @@ message.innerText =
 error.message;
 
 return;
-
 }
 
 
@@ -436,14 +397,10 @@ message.innerText =
 "Account তৈরি করা যায়নি।";
 
 return;
-
 }
 
 
-/* =========================
-   SAVE PLAYER DATA
-   TABLE = Player
-========================= */
+/* SAVE PLAYER DATA */
 
 const { error: playerError } =
 await supabaseClient
@@ -470,22 +427,23 @@ message.innerText =
 + playerError.message;
 
 return;
-
 }
 
 
 message.innerText =
-"Account সফলভাবে তৈরি হয়েছে। এখন Sign In করো।";
+"Account সফলভাবে তৈরি হয়েছে! এখন Sign In করো।";
 
 
 setTimeout(function() {
 
 showLogin();
 
-}, 1200);
+}, 1500);
 
 
-} catch (error) {
+}
+
+catch (error) {
 
 message.innerText =
 "Error: " + error.message;
@@ -515,9 +473,6 @@ document
 const message =
 document.getElementById("loginMessage");
 
-const button =
-document.getElementById("loginButton");
-
 
 if (!email || !password) {
 
@@ -525,20 +480,12 @@ message.innerText =
 "Email এবং Password দাও।";
 
 return;
-
 }
 
 
-button.disabled = true;
-
-button.innerText =
-"Signing In...";
-
 message.innerText =
-"";
+"Sign In হচ্ছে...";
 
-
-try {
 
 const { data, error } =
 await supabaseClient.auth.signInWithPassword({
@@ -555,28 +502,7 @@ if (error) {
 message.innerText =
 error.message;
 
-button.disabled = false;
-
-button.innerText =
-"Sign In";
-
 return;
-
-}
-
-
-if (!data.user) {
-
-message.innerText =
-"User পাওয়া যায়নি।";
-
-button.disabled = false;
-
-button.innerText =
-"Sign In";
-
-return;
-
 }
 
 
@@ -584,115 +510,55 @@ message.innerText =
 "Login successful!";
 
 
-await loadProfile(data.user.id);
-
-
-} catch (error) {
-
-message.innerText =
-"Login error: " + error.message;
-
-}
-
-
-button.disabled = false;
-
-button.innerText =
-"Sign In";
+await loadProfile();
 
 }
 
 
 /* =========================
    LOAD PLAYER PROFILE
-   TABLE = Player
 ========================= */
 
-async function loadProfile(userId = null) {
-
-const dashboardMessage =
-document.getElementById("dashboardMessage");
-
-
-try {
-
-
-/* GET CURRENT USER */
-
-if (!userId) {
+async function loadProfile() {
 
 const {
-data: userData,
+data: { user },
 error: userError
 } =
 await supabaseClient.auth.getUser();
 
 
-if (userError) {
+if (userError || !user) {
 
 showLogin();
 
 return;
-
 }
 
 
-if (!userData.user) {
-
-showLogin();
-
-return;
-
-}
-
-
-userId =
-userData.user.id;
-
-}
-
-
-/* =========================
-   GET PLAYER DATA
-========================= */
+/* GET PLAYER DATA */
 
 const { data, error } =
 await supabaseClient
 .from("Player")
-.select(
-'"Name", "DIs id", "Balance", "Email"'
-)
-.eq(
-"Id",
-userId
-)
-.maybeSingle();
+.select('"Name", "DIs id", "Balance", "Email"')
+.eq('"Id"', user.id)
+.single();
 
 
 if (error) {
 
-dashboardMessage.innerText =
-"Player data পাওয়া যায়নি: "
+document
+.getElementById("loginMessage")
+.innerText =
+"Login হয়েছে, কিন্তু Player Data পাওয়া যায়নি: "
 + error.message;
 
 return;
-
 }
 
 
-if (!data) {
-
-dashboardMessage.innerText =
-"এই account-এর Player Data পাওয়া যায়নি।";
-
-return;
-
-}
-
-
-/* =========================
-   SHOW DATA
-========================= */
+/* SHOW DATA */
 
 document
 .getElementById("playerName")
@@ -709,50 +575,48 @@ data["DIs id"] || "---";
 document
 .getElementById("playerBalance")
 .innerText =
-"৳" + (data["Balance"] ?? 0);
+"৳" + (data["Balance"] || 0);
 
 
-dashboardMessage.innerText =
-"";
+/* HIDE LOGIN/SIGNUP */
+
+document
+.getElementById("signupBox")
+.classList.add("hidden");
+
+document
+.getElementById("loginBox")
+.classList.add("hidden");
 
 
 /* SHOW DASHBOARD */
 
-showDashboard();
-
-} catch (error) {
-
-dashboardMessage.innerText =
-"Profile error: "
-+ error.message;
-
-}
+document
+.getElementById("dashboardBox")
+.classList.remove("hidden");
 
 }
 
 
 /* =========================
-   REFRESH BALANCE
+   REFRESH
 ========================= */
 
 async function refreshProfile() {
 
-const message =
 document
-.getElementById("dashboardMessage");
-
-message.innerText =
+.getElementById("dashboardMessage")
+.innerText =
 "Loading...";
 
 
 await loadProfile();
 
 
-setTimeout(function() {
-
-message.innerText = "";
-
-}, 500);
+document
+.getElementById("dashboardMessage")
+.innerText =
+"";
 
 }
 
@@ -781,28 +645,19 @@ document
 .value =
 "";
 
-
 document
 .getElementById("loginPassword")
 .value =
-"";
-
-
-document
-.getElementById("loginMessage")
-.innerText =
 "";
 
 }
 
 
 /* =========================
-   CHECK EXISTING SESSION
+   CHECK SESSION
 ========================= */
 
 async function checkSession() {
-
-try {
 
 const {
 data: { session }
@@ -810,20 +665,9 @@ data: { session }
 await supabaseClient.auth.getSession();
 
 
-if (session && session.user) {
+if (session) {
 
-await loadProfile(
-session.user.id
-);
-
-}
-
-} catch (error) {
-
-console.log(
-"Session error:",
-error
-);
+await loadProfile();
 
 }
 
